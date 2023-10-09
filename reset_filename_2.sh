@@ -9,33 +9,26 @@ convert_character_to_uppercase(){
 }
 
 replace_accented_character_with_unaccented() {
-    find . -name '*' -execdir rename -f -- 's/é/e/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/è/e/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/ê/e/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/î/i/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/ï/i/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/à/a/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/ä/a/g' '{}' \;
     find . -name '*' -execdir rename -f -- 's/œ/oe/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/ù/u/g' '{}' \;
-    find . -name '*' -execdir rename -f -- 's/ç/c/g' '{}' \;
+    find . -name '*' -execdir rename -f -- 's/[à-üÀ-Ü]/-/g' '{}' \;
 }
 
 # Replaces all characters except those in the range [a-z a-Z 0-9 .] with a dash.
 replace_punctuation_mark_with_dash() {
-    find . -name '*' -execdir rename -f -- 's/[^a-zA-Z0-9\.]+/-/g' '{}' \;
+    find . -name '*' -execdir rename -f -- 's/œ/oe/g' '{}' \;
+    find . -name '*' -execdir rename -f -- 's/[^a-zA-Z0-9\.\-]+/-/g' '{}' \;
 }
 
 remove_start_punctuation_mark() {
-    find . -name '*' -execdir rename -f -- "s/^[#\@\&\"\'\(\{\[\§\!\)\}\]\_\-\¨\^\*\$\€\%\£\`\<\>\?\,\.\;\/\\\|\:\+\=]+//g" '{}' \;
+    find . -name '*' -execdir rename -f -- "s/^[^a-zA-Z0-9à-üÀ-Ü]+//g" '{}' \;
 }
 
 remove_end_punctuation_mark() {
-    find . -name '*' -execdir rename -f -- "s/[#\@\&\"\'\(\{\[\§\!\)\}\]\_\-\¨\^\*\$\€\%\£\`\<\>\?\,\.\;\/\\\|\:\+\=]+$//g" '{}' \;
+    find . -name '*' -execdir rename -f -- "s/[^a-zA-Z0-9à-üÀ-Ü]+$//g" '{}' \;
 }
 
 replace_dots_with_dashes() {
-    find . -name '*' -execdir rename -f -- 's/\.(?=.*\.)/-/gm' '{}' \;
+    find . -name '*' -execdir rename -f -- 's/\.(?=.*\.)/-/g' '{}' \;
 }
 
 number_of_consecutive_dashes_to_one() {

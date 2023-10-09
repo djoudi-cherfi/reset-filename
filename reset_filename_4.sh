@@ -24,15 +24,13 @@ print_error_and_exit() {
 }
 
 check_argument() {
-    option_pattern='^-[a-zA-Z]+$'
-    if [[ -z $2 || $2 =~ $option_pattern ]]; then
+    if [[ -z $2 || $2 =~ ^-[a-zA-Z]+$ ]]; then
         print_error_and_exit "$1 $error_missing_argument"
     fi
 }
 
 check_next_argument() {
-    option_pattern='^-[a-zA-Z]+$'
-    if [[ -n $2 && ! $2 =~ $option_pattern ]]; then
+    if [[ -n $2 && ! $2 =~ ^-[a-zA-Z]+$ ]]; then
         print_error_and_exit "$1 $error_too_many_argument"
     fi
 }
@@ -62,8 +60,8 @@ help() {
     USAGE:
         program-name.sh [ -h  | --help ]
                         [ -l  | --lowercase ]
-                        [ -tc | --switch_two_character ] <arg1> <arg2>
-                        [ -dd | --dots_to_character ] <arg1>
+                        [ -stc | --switch_two_character ] <arg1> <arg2>
+                        [ -dc | --dots_to_character ] <arg1>
                         ...
 
     OPTIONS:
@@ -93,7 +91,7 @@ help() {
         -pm, --punctuation_mark <arg1>
             Replaces all characters except those in the range
             [a-z a-Z 0-9 .] with the one of your choice.
-            program-name.sh -pm -      | 01_foo+bar%baz.txt > 01-foo-bar-baz.txt
+            program-name.sh -pm        | 01_foo+bar%baz.txt > 01-foo-bar-baz.txt
                             -pm \"\+\" | 01_foo+bar%baz.txt > 01+foo+bar+baz.txt
         
         -sc, --start_character <arg1> <arg2>
@@ -152,18 +150,10 @@ main() {
                         # lowercase
                         rename_files "A-Z" "a-z" "y" ""
                         # without_accent
-                        rename_files "é" "e" "s" "g"
-                        rename_files "è" "e" "s" "g"
-                        rename_files "ê" "e" "s" "g"
-                        rename_files "ï" "i" "s" "g"
-                        rename_files "î" "i" "s" "g"
-                        rename_files "à" "a" "s" "g"
-                        rename_files "ä" "a" "s" "g"
                         rename_files "œ" "oe" "s" "g"
-                        rename_files "ù" "u" "s" "g"
-                        rename_files "ç" "c" "s" "g"
+                        rename_files "[à-üÀ-Ü]" "-" "s" "g"
                         # punctuation_mark
-                        rename_files "[^a-zA-Z0-9\.]+" "-" "s" "g"
+                        rename_files "[^a-zA-Z0-9\.\-]+" "-" "s" "g"
                         # dots_to_character
                         rename_files "\.(?=.*\.)" "-" "s" "g"
                         # consecutive_characters_to_one
@@ -184,41 +174,33 @@ main() {
                     "without_accent")
                         shift 1
                         process_file $1 $2
-                        rename_files "é" "e" "s" "g"
-                        rename_files "è" "e" "s" "g"
-                        rename_files "ê" "e" "s" "g"
-                        rename_files "ï" "i" "s" "g"
-                        rename_files "î" "i" "s" "g"
-                        rename_files "à" "a" "s" "g"
-                        rename_files "ä" "a" "s" "g"
                         rename_files "œ" "oe" "s" "g"
-                        rename_files "ù" "u" "s" "g"
-                        rename_files "ç" "c" "s" "g"
+                        rename_files "[à-üÀ-Ü]" "-" "s" "g"
                         ;;
                     "punctuation_mark")
                         local option=$1
                         local arg1=$2
-                        local option_pattern='^-[a-zA-Z]$'
-                        if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+                        if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 1
                             process_file $1 $2
-                            rename_files "[^a-zA-Z0-9\.]+" "-" "s" "g"
+                            rename_files "œ" "oe" "s" "g"
+                            rename_files "[^a-zA-Z0-9\.\-]+" "-" "s" "g"
                         else
                             shift 2
                             process_file $1 $2
-                            rename_files "[^a-zA-Z0-9\.]+" "$arg1" "s" "g"
+                            rename_files "œ" "oe" "s" "g"
+                            rename_files "[^a-zA-Z0-9\.\-]+" "$arg1" "s" "g"
                         fi
                         ;;
                     "start_character")
                         local option=$1
                         local arg1=$2
                         local arg2=$3
-                        local option_pattern='^-[a-zA-Z]$'
-                        if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+                        if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 1
                             process_file $1 $2
                             rename_files "^-" "" "s" "g"
-                        elif [[ -n $arg1 && -z $arg2 || $arg2 =~ $option_pattern ]]; then
+                        elif [[ -n $arg1 && -z $arg2 || $arg2 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 2
                             check_argument $option $arg2
                         else
@@ -232,12 +214,11 @@ main() {
                         local option=$1
                         local arg1=$2
                         local arg2=$3
-                        local option_pattern='^-[a-zA-Z]$'
-                        if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+                        if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 1
                             process_file $1 $2
                             rename_files "-$" "" "s" "g"
-                        elif [[ -n $arg1 && -z $arg2 || $arg2 =~ $option_pattern ]]; then
+                        elif [[ -n $arg1 && -z $arg2 || $arg2 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 2
                             check_argument $option $arg2
                         else
@@ -250,8 +231,7 @@ main() {
                     "dots_to_character")
                         local option=$1
                         local arg1=$2
-                        local option_pattern='^-[a-zA-Z]$'
-                        if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+                        if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 1
                             process_file $1 $2
                             rename_files "\.(?=.*\.)" "-" "s" "g"
@@ -264,8 +244,7 @@ main() {
                     "consecutive_characters_to_one")
                         local option=$1
                         local arg1=$2
-                        local option_pattern='^-[a-zA-Z]$'
-                        if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+                        if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 1
                             process_file $1 $2
                             rename_files "-{2,}" "-" "s" "g"
@@ -279,12 +258,11 @@ main() {
                         local option=$1
                         local arg1=$2
                         local arg2=$3
-                        local option_pattern='^-[a-zA-Z]$'
-                        if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+                        if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 1
                             process_file $1 $2
                             rename_files "-" "_" "s" "g"
-                        elif [[ -n $arg1 && -z $arg2 || $arg2 =~ $option_pattern ]]; then
+                        elif [[ -n $arg1 && -z $arg2 || $arg2 =~ ^-[a-zA-Z]+$ ]]; then
                             shift 2
                             check_argument $option $arg2
                         else
