@@ -9,26 +9,18 @@ convert_character_to_uppercase(){
 }
 
 replace_accented_character_with_unaccented() {
-    rename -f -- 's/é/e/g' *
-    rename -f -- 's/è/e/g' *
-    rename -f -- 's/ê/e/g' *
-    rename -f -- 's/î/i/g' *
-    rename -f -- 's/ï/i/g' *
-    rename -f -- 's/à/a/g' *
-    rename -f -- 's/ä/a/g' *
     rename -f -- 's/œ/oe/g' *
-    rename -f -- 's/ù/u/g' *
-    rename -f -- 's/ç/c/g' *
+    rename -f -- 's/[à-üÀ-Ü]/-/g' *
 }
 
 # Matches all characters except those in the range a-z a-Z 0-9 . - _.
 replace_punctuation_mark_with_dash() {
-    rename -f -- 's/[^a-zA-Z0-9\.\-\_]+/-/g' *
+    rename -f -- 's/œ/oe/g' *
+    rename -f -- 's/[^a-zA-Z0-9\.\-]+/-/g' *
 }
 
 replace_dots_with_dashes() {
-    rename -f -- 's/-.-|_._/-/g' *
-    rename -f -- 's/_.-|-._/-/g' *
+    rename -f -- 's/\.(?=.*\.)/-/g' *
 }
 
 number_of_consecutive_dashes_to_one() {

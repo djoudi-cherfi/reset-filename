@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-error_missing_argument="missing argument for"
+error_missing_argument="missing argument"
 
 print_error_and_exit() {
     echo "Error: $1"
@@ -8,9 +8,8 @@ print_error_and_exit() {
 }
 
 check_non_empty_argument() {
-    option_pattern='^-[a-zA-Z]$'
-    if [[ -z $2 || $2 =~ $option_pattern ]]; then
-        print_error_and_exit "$1 $error_missing_argument $1"
+    if [[ -z $2 || $2 =~ ^-[a-zA-Z]+$ ]]; then
+        print_error_and_exit "$1 $error_missing_argument"
     fi
 }
 
@@ -30,8 +29,8 @@ help() {
     USAGE:
         program-name.sh [ -h  | --help ]
                         [ -l  | --lowercase ]
-                        [ -tc | --switch_two_character ] <arg1> <arg2>
-                        [ -dd | --dots_to_character ] <arg1>
+                        [ -stc | --switch_two_character ] <arg1> <arg2>
+                        [ -dc | --dots_to_character ] <arg1>
                         ...
 
     OPTIONS:
@@ -61,7 +60,7 @@ help() {
         -pm, --punctuation_mark <arg1>
             Replaces all characters except those in the range
             [a-z a-Z 0-9 .] with the one of your choice.
-            program-name.sh -pm -      | 01_foo+bar%baz.txt > 01-foo-bar-baz.txt
+            program-name.sh -pm        | 01_foo+bar%baz.txt > 01-foo-bar-baz.txt
                             -pm \"\+\" | 01_foo+bar%baz.txt > 01+foo+bar+baz.txt
         
         -sc, --start_character <arg1> <arg2>
@@ -102,22 +101,15 @@ convert_character_to_uppercase(){
 }
 
 replace_accented_character_with_unaccented() {
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/é/e/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/è/e/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/ê/e/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/î/i/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/ï/i/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/à/a/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/ä/a/g" '{}' \;
     find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/œ/oe/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/ù/u/g" '{}' \;
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/ç/c/g" '{}' \;
+    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/[à-üÀ-Ü]/-/g" '{}' \;
 }
 
 replace_punctuation_mark() (
     local option="$1"
     local arg="$2"
-    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/[^a-zA-Z0-9\.]+/$arg/g" '{}' \;
+    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/œ/oe/g" '{}' \;
+    find ${directory_path:-"."} -name '*' -execdir rename -f -- "s/[^a-zA-Z0-9\.\-]+/$arg/g" '{}' \;
 )
 
 replace_start_character() {
@@ -197,8 +189,7 @@ main() {
         -pm | --punctuation_mark )
             local option=$1
             local arg=$2
-            local option_pattern='^-[a-zA-Z]$'
-            if [[ -n $option && -z $arg || $arg =~ $option_pattern  ]]; then
+            if [[ -n $option && -z $arg || $arg =~ ^-[a-zA-Z]+$  ]]; then
                 shift 1
                 process_file $1 $2
                 replace_punctuation_mark "$option" "-"
@@ -212,8 +203,7 @@ main() {
             local option=$1
             local arg1=$2
             local arg2=$3
-            local option_pattern='^-[a-zA-Z]$'
-            if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+            if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                 shift 1
                 process_file $1 $2
                 replace_start_character "$option" "-" ""
@@ -230,8 +220,7 @@ main() {
             local option=$1
             local arg1=$2
             local arg2=$3
-            local option_pattern='^-[a-zA-Z]$'
-            if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+            if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                 shift 1
                 process_file $1 $2
                 replace_start_character "$option" "-" ""
@@ -247,8 +236,7 @@ main() {
         -dc | --dots_to_character )
             local option=$1
             local arg=$2
-            local option_pattern='^-[a-zA-Z]$'
-            if [[ -n $option && -z $arg || $arg =~ $option_pattern  ]]; then
+            if [[ -n $option && -z $arg || $arg =~ ^-[a-zA-Z]+$  ]]; then
                 shift 1
                 process_file $1 $2
                 replace_dots_to_character "$option" "-"
@@ -261,8 +249,7 @@ main() {
         -cco | --consecutive_characters_to_one )
             local option=$1
             local arg=$2
-            local option_pattern='^-[a-zA-Z]$'
-            if [[ -n $option && -z $arg || $arg =~ $option_pattern  ]]; then
+            if [[ -n $option && -z $arg || $arg =~ ^-[a-zA-Z]+$  ]]; then
                 shift 1
                 process_file $1 $2
                 number_of_consecutive_characters_to_one "$option" "-"
@@ -276,8 +263,7 @@ main() {
             local option=$1
             local arg1=$2
             local arg2=$3
-            local option_pattern='^-[a-zA-Z]$'
-            if [[ -n $option && -z $arg1 || $arg1 =~ $option_pattern ]]; then
+            if [[ -n $option && -z $arg1 || $arg1 =~ ^-[a-zA-Z]+$ ]]; then
                 shift 1
                 process_file $1 $2
                 switch_two_character "$option" "-" "_"
