@@ -10,8 +10,7 @@ print_error_and_exit() {
 }
 
 check_argument() {
-    option_pattern='^-[a-zA-Z]+$'
-    if [[ -z $2 || $2 =~ $option_pattern ]]; then
+    if [[ -z $2 || $2 =~ ^-[a-zA-Z]+$ ]]; then
         print_error_and_exit "$1 $error_missing_argument"
     fi
 }
@@ -23,8 +22,8 @@ folder_path_and_folder_name() {
 }
 
 process_file() {
-    if [[ $1 == "-f" ]]; then
-        check_argument "-f" "$2"
+    if [[ $1 == "-dir" ]]; then
+        check_argument "-dir" "$2"
         directory_path=$2
         shift 2
     fi
@@ -67,13 +66,13 @@ help() {
 
     USAGE:
         program-name.sh [ -h | --help ]
-                        [ -f | --file ] <directory_path>
+                        [ -dir | directory_path ] <directory_path>
                         [ -c | --create ] <arg>
                         ...
     OPTIONS:
-        -f, --file
+        -dir, directory_path
             Defines the path of the directory where the files must be created.
-            program-name.sh -f <directory_path>
+            program-name.sh -dir <directory_path>
         
         -c, --create
             If folder "test" not exist create folder and subfolder with files.
@@ -99,8 +98,8 @@ main() {
                 shift 1
                 help
                 ;;
-            -f | --file )
-                check_argument "-f" "$2"
+            -dir | directory_path )
+                check_argument "-dir" "$2"
                 directory_path="$2"
                 shift 2
                 ;;
